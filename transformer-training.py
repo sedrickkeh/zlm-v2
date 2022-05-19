@@ -1,6 +1,9 @@
 import argparse 
 from transformers import GPT2Tokenizer, AutoConfig, GPT2LMHeadModel
+from transformers import DataCollatorForLanguageModeling, TrainingArguments, Trainer
 from load_data import load_bible_data
+import logging
+logging.basicConfig(level=logging.INFO)
 
 blue = ["acu","alb","ceb","cjp","dik","eng","ewe","gla","hun","jak","kek","mam","nor","por","quw","slk","spa","tgl","vie","zul"]
 green = ["ake","cak","chq","deu","dop","eus","gbi","hrv","ita","kbh","lit","nld","pol","quc","shi","som","swe","usp","wol","xho"]
@@ -33,7 +36,6 @@ def main(args):
         tokenize, batched=True, remove_columns=raw_datasets["train"].column_names
     )
 
-
     config = AutoConfig.from_pretrained(
             "gpt2",
             vocab_size=len(tokenizer),
@@ -43,12 +45,7 @@ def main(args):
         )
     model = GPT2LMHeadModel(config)
 
-    from transformers import DataCollatorForLanguageModeling, TrainingArguments, Trainer
-    import logging
-    logging.basicConfig(level=logging.INFO)
-
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
-
     training_args = TrainingArguments(
         output_dir=args.output_dir,
         per_device_train_batch_size=args.batch_size,
@@ -64,7 +61,6 @@ def main(args):
         save_strategy="epoch",
     )
 
-
     trainer = Trainer(
         model=model,
         tokenizer=tokenizer,
@@ -76,14 +72,14 @@ def main(args):
 
     trainer.train()
 
-    for l in blue:
-        print(l)
+    for lang in args.val_languages:
+        print(lang)
         print(trainer.evaluate(
-            eval_dataset=tokenized_datasets[l]
+            eval_dataset=tokenized_datasets[lang]
         ))
 
 if __name__=="__main__":
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="/content/drive/MyDrive/Colab Notebooks/zero-shot-lm/bibles_latin_csv/")
     parser.add_argument("--output_dir", type=str, default="transformer-zerolm")
     parser.add_argument("--train_split", type=str, default=None,
