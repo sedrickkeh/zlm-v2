@@ -44,7 +44,7 @@ def main(args):
             eos_token_id=tokenizer.eos_token_id,
         )
     model = GPT2LMHeadModel(config)
-    model.from_pretrained(args.model_path)
+    model = model.from_pretrained(args.model_path)
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
     training_args = TrainingArguments(
