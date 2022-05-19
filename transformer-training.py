@@ -19,7 +19,7 @@ def main(args):
         outputs = tokenizer(
             element["text"],
             truncation=True,
-            max_length=64,
+            max_length=args.max_len,
             pad_to_max_length=True,
             return_overflowing_tokens=True,
             return_length=True,
@@ -37,7 +37,7 @@ def main(args):
     config = AutoConfig.from_pretrained(
             "gpt2",
             vocab_size=len(tokenizer),
-            n_ctx=64,
+            n_ctx=args.max_len,
             bos_token_id=tokenizer.bos_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
@@ -49,16 +49,16 @@ def main(args):
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
 
-    args = TrainingArguments(
-        output_dir="transformer-zerolm",
-        per_device_train_batch_size=32,
-        per_device_eval_batch_size=16,
+    training_args = TrainingArguments(
+        output_dir=args.output_dir,
+        per_device_train_batch_size=args.batch_size,
+        per_device_eval_batch_size=args.batch_size//2,
         evaluation_strategy="epoch",
         gradient_accumulation_steps=8,
-        num_train_epochs=5,
-        weight_decay=0.1,
+        num_train_epochs=args.epochs,
+        weight_decay=args.weight_decay,
         lr_scheduler_type="cosine",
-        learning_rate=5e-5,
+        learning_rate=args.lr,
         fp16=True,
         logging_strategy="epoch",
         save_strategy="epoch",
@@ -68,7 +68,7 @@ def main(args):
     trainer = Trainer(
         model=model,
         tokenizer=tokenizer,
-        args=args,
+        args=training_args,
         data_collator=data_collator,
         train_dataset=tokenized_datasets["train"],
         eval_dataset=tokenized_datasets["valid"],
@@ -85,6 +85,7 @@ def main(args):
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument("--data_dir", type=str, default="/content/drive/MyDrive/Colab Notebooks/zero-shot-lm/bibles_latin_csv/")
+    parser.add_argument("--output_dir", type=str, default="transformer-zerolm")
     parser.add_argument("--train_split", type=str, default=None,
                         help="red/blue/green/yellow group of languages")
     parser.add_argument("--train_language", type=str, default=None,
@@ -97,6 +98,15 @@ if __name__=="__main__":
                         help="individual language")
     parser.add_argument("--val_file", type=str, default=None,
                         help="txt file with one language on each line")
+
+    parser.add_argument("--lr", type=float, default=5e-5)
+    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--batch_size", type=int, default=32)
+
+    # Probably don't need to change these
+    parser.add_argument("--weight_decay", type=float, default=0.1)
+    parser.add_argument("--max_len", type=int, default=64)
+
     args = parser.parse_args()
 
     # Need exactly 1 way to specify val language
