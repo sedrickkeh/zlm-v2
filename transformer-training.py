@@ -2,6 +2,7 @@ import argparse
 from transformers import GPT2Tokenizer, AutoConfig, GPT2LMHeadModel
 from transformers import DataCollatorForLanguageModeling, TrainingArguments, Trainer
 from load_data import load_bible_data
+from lang_distances import NN_Extractor
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -88,6 +89,9 @@ if __name__=="__main__":
                         help="individual language")
     parser.add_argument("--train_file", type=str, default=None,
                         help="txt file with one language on each line")
+    parser.add_argument("--train_by_langvec", type=str, choices=["geo"], default=None,
+                        help="method of selecting which languages to train on")
+    parser.add_argument("--train_knn", type=int, default=5)
     parser.add_argument("--val_split", type=str, default=None,
                         help="red/blue/green/yellow group of languages")
     parser.add_argument("--val_language", type=str, default=None,
@@ -119,7 +123,7 @@ if __name__=="__main__":
     args.val_languages = val_languages
 
     # Need at most 1 way to specify train language
-    assert((args.train_split is not None) + (args.train_language is not None) + (args.train_file is not None) <= 1)
+    assert((args.train_split is not None) + (args.train_language is not None) + (args.train_file is not None) + (args.train_by_langvec is not None) <= 1)
     train_languages = []
     if args.train_split is not None:
         train_languages = langs_dict[args.train_split]
@@ -129,6 +133,11 @@ if __name__=="__main__":
         with open(args.train_file, 'r') as f:
             for line in f:
                 train_languages.append(line.strip())
+    elif args.train_by_langvec is not None:
+        assert(args.val_language is not None)
+        langvec_extractor = NN_Extractor()
+        if args.train_by_langvec=="geo":
+            train_languages = langvec_extractor.by_geography(args.val_language, k=args.train_knn)
     else:
         for l in langs:
             if l not in val_languages:
