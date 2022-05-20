@@ -2,6 +2,7 @@ import argparse
 from transformers import GPT2Tokenizer, AutoConfig, GPT2LMHeadModel
 from transformers import DataCollatorForLanguageModeling, TrainingArguments, Trainer
 from load_data import load_bible_data
+from data_statistics import DataStatistics
 from lang_distances import NN_Extractor
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -147,6 +148,7 @@ if __name__=="__main__":
         train_languages.extend(val_languages)
     args.train_languages = train_languages
 
-    print("Train languages: ", args.train_languages)
-    print("Test languages: ", args.val_languages)
+    ds = DataStatistics(args.data_dir)
+    print("Train languages: ", ds.get_counts(args.train_languages), args.train_languages)
+    print("Test languages: ", ds.get_counts(args.val_languages), args.val_languages)
     main(args)

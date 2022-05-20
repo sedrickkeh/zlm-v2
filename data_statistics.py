@@ -17,6 +17,12 @@ class DataStatistics:
             df = pd.read_csv(f"{data_dir}/{lang}/train.csv")
             self.counts[lang] = len(df)
 
+    def get_counts(self, arr):
+        cnt = 0
+        for lang in arr:
+            cnt += self.counts[lang]
+        return cnt
+
     def init_dict(self):
         self.langdict = {}
         self.langdict["acu"] = ("Achuar-Shiwiar", "Jivaroan")
