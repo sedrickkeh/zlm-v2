@@ -98,6 +98,7 @@ if __name__=="__main__":
                         help="individual language")
     parser.add_argument("--val_file", type=str, default=None,
                         help="txt file with one language on each line")
+    parser.add_argument("--include_val_in_train", action='store_true')
 
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--epochs", type=int, default=5)
@@ -142,6 +143,10 @@ if __name__=="__main__":
         for l in langs:
             if l not in val_languages:
                 train_languages.append(l)
+    if args.include_val_in_train:
+        train_languages.extend(val_languages)
     args.train_languages = train_languages
 
+    print("Train languages: ", args.train_languages)
+    print("Test languages: ", args.val_languages)
     main(args)
