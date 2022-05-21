@@ -90,7 +90,7 @@ if __name__=="__main__":
                         help="individual language")
     parser.add_argument("--train_file", type=str, default=None,
                         help="txt file with one language on each line")
-    parser.add_argument("--train_by_langvec", type=str, choices=["geo"], default=None,
+    parser.add_argument("--train_by_langvec", type=str, choices=["geo", "fam"], default=None,
                         help="method of selecting which languages to train on")
     parser.add_argument("--train_knn", type=int, default=5)
     parser.add_argument("--val_split", type=str, default=None,
@@ -140,6 +140,15 @@ if __name__=="__main__":
         langvec_extractor = NN_Extractor()
         if args.train_by_langvec=="geo":
             train_languages = langvec_extractor.by_geography(args.val_language, k=args.train_knn)
+        elif args.train_by_langvec=="fam":
+            ds = DataStatistics(args.data_dir)
+            current_family = ds.langdict[args.val_language][1]
+            for lang in ds.langdict:
+                if lang==args.val_language: continue
+                if ds.langdict[lang][1]==current_family:
+                    train_languages.append(lang)
+        else:
+            assert(args.train_by_langvec in ["geo", "fam"])
     else:
         for l in langs:
             if l not in val_languages:
