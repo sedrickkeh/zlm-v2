@@ -46,6 +46,8 @@ def main(args):
             eos_token_id=tokenizer.eos_token_id,
         )
     model = GPT2LMHeadModel(config)
+    if args.model_dir is not None:
+        model = model.from_pretrained(args.model_dir)
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
     training_args = TrainingArguments(
@@ -83,6 +85,7 @@ def main(args):
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="/content/drive/MyDrive/Colab Notebooks/zero-shot-lm/bibles_latin_csv/")
+    parser.add_argument("--model_dir", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default="transformer-zerolm")
     parser.add_argument("--train_split", type=str, default=None,
                         help="red/blue/green/yellow group of languages")
