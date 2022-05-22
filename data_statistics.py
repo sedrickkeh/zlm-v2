@@ -78,7 +78,7 @@ class DataStatistics:
         self.langdict["glv"] = ("Manx", "Indo-European")
         self.langdict["ind"] = ("Indonesian", "Austronesian")
         self.langdict["jiv"] = ("Jivaro", "Jivaroan")
-        self.langdict["lat"] = ("Latvian", "Indo-European")
+        self.langdict["lat"] = ("Latin", "Indo-European")
         self.langdict["mri"] = ("Maori", "Austronesian")
         self.langdict["pck"] = ("Paite", "Sino-Tibetan")
         self.langdict["pot"] = ("Potawatomi", "Algic")
