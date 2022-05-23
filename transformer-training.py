@@ -2,7 +2,6 @@ import argparse
 from transformers import GPT2Tokenizer, AutoConfig, GPT2LMHeadModel
 from transformers import DataCollatorForLanguageModeling, TrainingArguments, Trainer
 from langvec_model import MyGPT2LMHeadModel
-from utils import load_lang2vec
 from load_data import load_bible_data
 from data_statistics import DataStatistics
 from lang_distances import NN_Extractor
@@ -17,6 +16,8 @@ langs = blue+green+red+yellow
 langs_dict = {'blue':blue, 'green':green, 'red':red, 'yellow':yellow}
 
 def main(args):
+    if args.use_langvecs:
+        from utils import load_lang2vec
     lang2vec = load_lang2vec(args.lang2vec_dir)
     raw_datasets = load_bible_data(args.data_dir, args.train_languages, args.val_languages)
 
