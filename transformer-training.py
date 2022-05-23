@@ -1,6 +1,8 @@
 import argparse 
 from transformers import GPT2Tokenizer, AutoConfig, GPT2LMHeadModel
 from transformers import DataCollatorForLanguageModeling, TrainingArguments, Trainer
+from langvec_model import MyGPT2LMHeadModel
+from utils import load_lang2vec
 from load_data import load_bible_data
 from data_statistics import DataStatistics
 from lang_distances import NN_Extractor
@@ -15,6 +17,7 @@ langs = blue+green+red+yellow
 langs_dict = {'blue':blue, 'green':green, 'red':red, 'yellow':yellow}
 
 def main(args):
+    lang2vec = load_lang2vec(args.lang2vec_dir)
     raw_datasets = load_bible_data(args.data_dir, args.train_languages, args.val_languages)
 
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
@@ -29,6 +32,12 @@ def main(args):
             return_overflowing_tokens=True,
             return_length=True,
         )
+        if args.use_langvecs:
+            langarr = []
+            for l in element["lang"]:
+                langarr.append(lang2vec[l])
+            for i in range(len(langarr)):
+                outputs["input_ids"][i].extend(langarr[i])
         input_batch = []
         for length, input_ids in zip(outputs["length"], outputs["input_ids"]):
             input_batch.append(input_ids)
@@ -45,7 +54,10 @@ def main(args):
             bos_token_id=tokenizer.bos_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
-    model = GPT2LMHeadModel(config)
+    if args.use_langvecs:
+        model = MyGPT2LMHeadModel(config)
+    else:
+        model = GPT2LMHeadModel(config)
     if args.model_dir is not None:
         model = model.from_pretrained(args.model_dir)
 
@@ -85,6 +97,7 @@ def main(args):
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="/content/drive/MyDrive/Colab Notebooks/zero-shot-lm/bibles_latin_csv/")
+    parser.add_argument("--lang2vec_dir", type=str, default="/content/drive/MyDrive/Colab Notebooks/zero-shot-lm/src_new/uriel_embeddings_new.txt")
     parser.add_argument("--model_dir", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default="transformer-zerolm")
     parser.add_argument("--train_split", type=str, default=None,
@@ -103,6 +116,7 @@ if __name__=="__main__":
     parser.add_argument("--val_file", type=str, default=None,
                         help="txt file with one language on each line")
     parser.add_argument("--include_val_in_train", action='store_true')
+    parser.add_argument("--use_langvecs", action='store_true')
 
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--epochs", type=int, default=5)
