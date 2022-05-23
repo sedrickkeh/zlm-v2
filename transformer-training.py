@@ -59,7 +59,10 @@ def main(args):
     else:
         model = GPT2LMHeadModel(config)
     if args.model_dir is not None:
-        model = model.from_pretrained(args.model_dir)
+        if args.use_langvecs:
+            model = model.from_pretrained(args.model_dir, args)
+        else:
+            model = model.from_pretrained(args.model_dir)
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
     training_args = TrainingArguments(
