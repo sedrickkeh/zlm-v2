@@ -8,7 +8,7 @@ from transformers.modeling_outputs import CausalLMOutputWithCrossAttentions
 from copy import deepcopy
 
 class MyGPT2Model(GPT2Model):
-    def __init__(self, config):
+    def __init__(self, config, args):
         super().__init__(config)
 
         self.embed_dim = config.hidden_size
@@ -28,8 +28,8 @@ class MyGPT2Model(GPT2Model):
         # Initialize weights and apply final processing
         self.post_init()
 
-        self.linear1 = nn.Linear(145, 30)
-        self.linear2 = nn.Linear(798, 768)
+        self.linear1 = nn.Linear(145, args.langvec_dim)
+        self.linear2 = nn.Linear(768+args.langvec_dim, 768)
 
 
     def forward(
@@ -232,9 +232,9 @@ class MyGPT2Model(GPT2Model):
         )
 
 class MyGPT2LMHeadModel(GPT2LMHeadModel):
-    def __init__(self, config):
+    def __init__(self, config, args):
         super().__init__(config)
-        self.transformer = MyGPT2Model(config)
+        self.transformer = MyGPT2Model(config, args)
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
         # Model parallel

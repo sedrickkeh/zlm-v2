@@ -55,7 +55,7 @@ def main(args):
             eos_token_id=tokenizer.eos_token_id,
         )
     if args.use_langvecs:
-        model = MyGPT2LMHeadModel(config)
+        model = MyGPT2LMHeadModel(config, args)
     else:
         model = GPT2LMHeadModel(config)
     if args.model_dir is not None:
@@ -116,7 +116,9 @@ if __name__=="__main__":
     parser.add_argument("--val_file", type=str, default=None,
                         help="txt file with one language on each line")
     parser.add_argument("--include_val_in_train", action='store_true')
+
     parser.add_argument("--use_langvecs", action='store_true')
+    parser.add_argument("--langvec_dim", type=int, default=30)
 
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--epochs", type=int, default=5)
