@@ -19,8 +19,8 @@ langs_dict = {'blue':blue, 'green':green, 'red':red, 'yellow':yellow}
 def main(args):
     if args.use_langvecs:
         from utils import load_lang2vec
-    lang2vec = load_lang2vec(args.lang2vec_dir)
-    raw_datasets = load_bible_data(args.data_dir, args.train_languages, args.val_languages)
+        lang2vec = load_lang2vec(args.lang2vec_dir)
+    raw_datasets = load_bible_data(args)
 
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     tokenizer.pad_token = tokenizer.eos_token
@@ -103,8 +103,10 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="/content/drive/MyDrive/Colab Notebooks/zero-shot-lm/bibles_latin_csv/")
     parser.add_argument("--lang2vec_dir", type=str, default="/content/drive/MyDrive/Colab Notebooks/zero-shot-lm/src_new/uriel_embeddings_new.txt")
+    parser.add_argument("--wordlist_dir", type=str, default="/content/drive/MyDrive/Colab Notebooks/zero-shot-lm/lexicons/csv_random/")
     parser.add_argument("--model_dir", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default="transformer-zerolm")
+
     parser.add_argument("--train_split", type=str, default=None,
                         help="red/blue/green/yellow group of languages")
     parser.add_argument("--train_language", type=str, default=None,
@@ -122,6 +124,7 @@ if __name__=="__main__":
                         help="txt file with one language on each line")
     parser.add_argument("--include_val_in_train", action='store_true')
 
+    parser.add_argument("--use_wordlists", action="store_true")
     parser.add_argument("--use_langvecs", action='store_true')
     parser.add_argument("--langvec_dim", type=int, default=30)
     parser.add_argument("--freeze_except_langvec", action='store_true')

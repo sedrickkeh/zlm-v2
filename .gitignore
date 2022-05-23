@@ -2,3 +2,4 @@ __pycache__
 bibles_latin_csv
 transformer-zerolm
 lang2vec_embeddings
+wordlists
