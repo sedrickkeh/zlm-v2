@@ -2,6 +2,7 @@ import argparse
 from transformers import GPT2Tokenizer, AutoConfig, GPT2LMHeadModel
 from transformers import DataCollatorForLanguageModeling, TrainingArguments, Trainer
 from load_data import load_bible_data
+from langvec_model import MyGPT2LMHeadModel
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -13,6 +14,9 @@ langs = blue+green+red+yellow
 langs_dict = {'blue':blue, 'green':green, 'red':red, 'yellow':yellow}
 
 def main(args):
+    if args.use_langvecs:
+        from utils import load_lang2vec
+        lang2vec = load_lang2vec(args.lang2vec_dir)
     raw_datasets = load_bible_data(args)
 
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
@@ -27,6 +31,12 @@ def main(args):
             return_overflowing_tokens=True,
             return_length=True,
         )
+        if args.use_langvecs:
+            langarr = []
+            for l in element["lang"]:
+                langarr.append(lang2vec[l])
+            for i in range(len(langarr)):
+                outputs["input_ids"][i].extend(langarr[i])
         input_batch = []
         for length, input_ids in zip(outputs["length"], outputs["input_ids"]):
             input_batch.append(input_ids)
@@ -44,7 +54,10 @@ def main(args):
             eos_token_id=tokenizer.eos_token_id,
         )
     model = GPT2LMHeadModel(config)
-    model = model.from_pretrained(args.model_path)
+    if args.use_langvecs:
+        model = model.from_pretrained(args.model_path, args)
+    else:
+        model = model.from_pretrained(args.model_path)
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
     training_args = TrainingArguments(
@@ -89,6 +102,8 @@ if __name__=="__main__":
     parser.add_argument("--test_file", type=str, default=None,
                         help="txt file with one language on each line")
     parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--use_langvecs", action='store_true')
+    parser.add_argument("--langvec_dim", type=int, default=30)
 
     args = parser.parse_args()
 
