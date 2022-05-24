@@ -2,7 +2,11 @@ from datasets import load_dataset, DatasetDict
 
 def load_bible_data(args):
     data_dir = args.data_dir
-    train_languages, val_languages = args.train_languages, args.val_languages
+    train_languages = args.train_languages
+    if "val_languages" in args: 
+        val_languages = args.val_languages
+    else: 
+        val_languages = args.test_languages
 
     train_files = []
     for lang in train_languages:
@@ -10,9 +14,10 @@ def load_bible_data(args):
     valid_files = []
     for lang in val_languages:
         valid_files.append(f'{data_dir}/{lang}/valid.csv')
-    if args.use_wordlists:
-        for lang in val_languages:
-            train_files.append(f'{args.wordlist_dir}/{lang}.csv')
+    if "use_wordlists" in args:
+        if args.use_wordlists:
+            for lang in val_languages:
+                train_files.append(f'{args.wordlist_dir}/{lang}.csv')
 
     langs_dict = {}
     if len(train_files)>0:      # 0 during inference

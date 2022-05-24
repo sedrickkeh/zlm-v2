@@ -13,7 +13,7 @@ langs = blue+green+red+yellow
 langs_dict = {'blue':blue, 'green':green, 'red':red, 'yellow':yellow}
 
 def main(args):
-    raw_datasets = load_bible_data(args.data_dir, args.train_languages, args.test_languages)
+    raw_datasets = load_bible_data(args)
 
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     tokenizer.pad_token = tokenizer.eos_token

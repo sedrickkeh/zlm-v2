@@ -19,6 +19,7 @@ class DataStatistics:
 
     def get_counts(self, arr):
         cnt = 0
+        arr = list(arr)
         for lang in arr:
             cnt += self.counts[lang]
         return cnt
