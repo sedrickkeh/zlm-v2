@@ -53,10 +53,11 @@ def main(args):
             bos_token_id=tokenizer.bos_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
-    model = GPT2LMHeadModel(config)
     if args.use_langvecs:
+        model = MyGPT2LMHeadModel(config, args)
         model = model.from_pretrained(args.model_path, args)
     else:
+        model = GPT2LMHeadModel(config)
         model = model.from_pretrained(args.model_path)
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
