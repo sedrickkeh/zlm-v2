@@ -28,7 +28,7 @@ class MyGPT2Model(GPT2Model):
         # Initialize weights and apply final processing
         self.post_init()
 
-        self.linear1 = nn.Linear(145, args.langvec_dim)
+        self.linear1 = nn.Linear(args.langvec_initial_dim, args.langvec_dim)
         self.linear2 = nn.Linear(768+args.langvec_dim, 768)
 
 

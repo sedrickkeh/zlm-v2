@@ -19,6 +19,7 @@ def main(args):
     if args.use_langvecs:
         from utils import load_lang2vec
         lang2vec = load_lang2vec(args.lang2vec_dir)
+        args.langvec_initial_dim = len(lang2vec['eng'])
     raw_datasets = load_bible_data(args)
 
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
