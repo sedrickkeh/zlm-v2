@@ -14,7 +14,7 @@ green = ["ake","cak","chq","deu","dop","eus","gbi","hrv","ita","kbh","lit","nld"
 red = ["afr","agr","amu","ces","cni","dje","epo","fin","glv","ind","jiv","lat","mri","pck","pot","rom","slv","srp","tmh","wal"]
 yellow = ["bsn","cha","dan","djk","est","fra","hat","isl","kab","lav","nhg","plt","ppk","ron","sna","ssw","tur"]
 langs = blue+green+red+yellow
-langs_dict = {'blue':blue, 'green':green, 'red':red, 'yellow':yellow}
+splits_dict = {'blue':blue, 'green':green, 'red':red, 'yellow':yellow}
 
 def main(args):
     if args.use_langvecs:
@@ -147,7 +147,7 @@ if __name__=="__main__":
     assert((args.val_split is not None) + (args.val_language is not None) + (args.val_file is not None) == 1)
     val_languages = []
     if args.val_split is not None:
-        val_languages = langs_dict[args.val_split]
+        val_languages = splits_dict[args.val_split]
     elif args.val_language is not None:
         val_languages.append(args.val_language)
     elif args.val_file is not None:
@@ -160,7 +160,7 @@ if __name__=="__main__":
     assert((args.train_split is not None) + (args.train_language is not None) + (args.train_file is not None) + (args.train_by_langvec is not None) <= 1)
     train_languages = []
     if args.train_split is not None:
-        train_languages = langs_dict[args.train_split]
+        train_languages = splits_dict[args.train_split]
     elif args.train_language is not None:
         train_languages.append(args.train_language)
     elif args.train_file is not None:

@@ -11,7 +11,7 @@ green = ["ake","cak","chq","deu","dop","eus","gbi","hrv","ita","kbh","lit","nld"
 red = ["afr","agr","amu","ces","cni","dje","epo","fin","glv","ind","jiv","lat","mri","pck","pot","rom","slv","srp","tmh","wal"]
 yellow = ["bsn","cha","dan","djk","est","fra","hat","isl","kab","lav","nhg","plt","ppk","ron","sna","ssw","tur"]
 langs = blue+green+red+yellow
-langs_dict = {'blue':blue, 'green':green, 'red':red, 'yellow':yellow}
+splits_dict = {'blue':blue, 'green':green, 'red':red, 'yellow':yellow}
 
 def main(args):
     if args.use_langvecs:
@@ -113,7 +113,7 @@ if __name__=="__main__":
     assert((args.test_split is not None) + (args.test_language is not None) + (args.test_file is not None) == 1)
     test_languages = []
     if args.test_split is not None:
-        test_languages = langs_dict[args.test_split]
+        test_languages = splits_dict[args.test_split]
     elif args.test_language is not None:
         test_languages.append(args.test_language)
     elif args.test_file is not None:
