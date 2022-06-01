@@ -28,8 +28,11 @@ class MyGPT2Model(GPT2Model):
         # Initialize weights and apply final processing
         self.post_init()
 
+        self.max_len = args.max_len
         self.linear1 = nn.Linear(args.langvec_initial_dim, args.langvec_dim)
         self.linear2 = nn.Linear(768+args.langvec_dim, 768)
+        self.projection_method = args.projection_method
+        self.lang_embs = nn.Embedding(77, args.langvec_dim)
 
 
     def forward(
@@ -48,8 +51,8 @@ class MyGPT2Model(GPT2Model):
         output_hidden_states=None,
         return_dict=None,
     ):
-        input_ids, langs = input_ids[:,:64], input_ids[:,64:]
-        attention_mask = attention_mask[:,:64]
+        input_ids, langs, lang_ids = input_ids[:,:self.max_len], input_ids[:,self.max_len:-1], input_ids[:,-1]
+        attention_mask = attention_mask[:,:self.max_len]
 
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (
@@ -127,7 +130,10 @@ class MyGPT2Model(GPT2Model):
         if inputs_embeds is None:
             # inputs_embeds = self.wte(input_ids)
             input_hiddens = self.wte(input_ids)
-            langs = self.linear1(langs.float())
+            if self.projection_method:
+                langs = self.linear1(langs.float())
+            else:
+                langs = self.lang_embs(lang_ids)
             langs = langs.unsqueeze(1).expand(langs.shape[0], input_hiddens.shape[1], langs.shape[1])
             out = torch.cat([input_hiddens, langs], dim=2)
             inputs_embeds = self.linear2(out)

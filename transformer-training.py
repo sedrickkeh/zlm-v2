@@ -17,9 +17,10 @@ splits_dict = {'blue':blue, 'green':green, 'red':red, 'yellow':yellow}
 
 def main(args):
     if args.use_langvecs:
-        from utils import load_lang2vec
+        from utils import load_lang2vec, load_lang_ids
         lang2vec = load_lang2vec(args.lang2vec_dir)
         args.langvec_initial_dim = len(lang2vec['eng'])
+        lang_ids = load_lang_ids(args.lang2vec_dir)
     raw_datasets = load_bible_data(args)
 
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
@@ -35,11 +36,13 @@ def main(args):
             return_length=True,
         )
         if args.use_langvecs:
-            langarr = []
+            lang_vec_arr, lang_id_arr = [], []
             for l in element["lang"]:
-                langarr.append(lang2vec[l])
-            for i in range(len(langarr)):
-                outputs["input_ids"][i].extend(langarr[i])
+                lang_vec_arr.append(lang2vec[l])
+                lang_id_arr.append(lang_ids[l])
+            for i in range(len(lang_vec_arr)):
+                outputs["input_ids"][i].extend(lang_vec_arr[i])
+                outputs["input_ids"][i].extend([lang_id_arr[i]])
         input_batch = []
         for length, input_ids in zip(outputs["length"], outputs["input_ids"]):
             input_batch.append(input_ids)
@@ -124,9 +127,12 @@ if __name__=="__main__":
                         help="txt file with one language on each line")
     parser.add_argument("--include_val_in_train", action='store_true')
 
+    # Langvec related
     parser.add_argument("--use_wordlists", action="store_true")
     parser.add_argument("--use_langvecs", action='store_true')
     parser.add_argument("--langvec_dim", type=int, default=30)
+    parser.add_argument("--projection_method", action='store_true',
+                        help="If true, learns a projection. If false, learns embedding directly.")
 
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--epochs", type=int, default=5)
