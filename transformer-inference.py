@@ -110,8 +110,10 @@ if __name__=="__main__":
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--max_len", type=int, default=64)
 
-    # Langvec related
+    # Wordlists
     parser.add_argument("--use_wordlists", action="store_true")
+
+    # Langvec related
     parser.add_argument("--use_langvecs", action='store_true')
     parser.add_argument("--langvec_dim", type=int, default=30)
     parser.add_argument("--projection_method", action='store_true',

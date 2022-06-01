@@ -139,8 +139,10 @@ if __name__=="__main__":
                         help="txt file with one language on each line")
     parser.add_argument("--include_val_in_train", action='store_true')
 
-    # Langvec related
+    # Wordlists
     parser.add_argument("--use_wordlists", action="store_true")
+
+    # Langvec related
     parser.add_argument("--use_langvecs", action='store_true')
     parser.add_argument("--langvec_dim", type=int, default=30)
     parser.add_argument("--projection_method", action='store_true',
