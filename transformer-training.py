@@ -85,16 +85,28 @@ def main(args):
         save_strategy="epoch",
     )
 
-    trainer = Trainer(
-        model=model,
-        tokenizer=tokenizer,
-        args=training_args,
-        data_collator=data_collator,
-        train_dataset=tokenized_datasets["train"],
-        eval_dataset=tokenized_datasets["valid"],
-    )
+    if args.freeze_except_langvec:
+        from ideal_vec_trainer import IdealVecTrainer
+        trainer = IdealVecTrainer(
+            model=model,
+            tokenizer=tokenizer,
+            args=training_args,
+            data_collator=data_collator,
+            train_dataset=tokenized_datasets["train"],
+            eval_dataset=tokenized_datasets["valid"],
+        )
+        trainer.train(args.freeze_except_langvec)
 
-    trainer.train()
+    else:
+        trainer = Trainer(
+            model=model,
+            tokenizer=tokenizer,
+            args=training_args,
+            data_collator=data_collator,
+            train_dataset=tokenized_datasets["train"],
+            eval_dataset=tokenized_datasets["valid"],
+        )
+        trainer.train()
 
     for lang in args.val_languages:
         print(lang)
@@ -133,6 +145,7 @@ if __name__=="__main__":
     parser.add_argument("--langvec_dim", type=int, default=30)
     parser.add_argument("--projection_method", action='store_true',
                         help="If true, learns a projection. If false, learns embedding directly.")
+    parser.add_argument("--freeze_except_langvec", action='store_true')
 
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--epochs", type=int, default=5)
@@ -143,6 +156,10 @@ if __name__=="__main__":
     parser.add_argument("--max_len", type=int, default=64)
 
     args = parser.parse_args()
+
+    # Check asserts
+    if args.freeze_except_langvec:
+        assert(args.model_dir is not None)
 
     # Need exactly 1 way to specify val language
     assert((args.val_split is not None) + (args.val_language is not None) + (args.val_file is not None) == 1)
