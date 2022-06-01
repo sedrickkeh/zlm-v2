@@ -95,7 +95,7 @@ def main(args):
             train_dataset=tokenized_datasets["train"],
             eval_dataset=tokenized_datasets["valid"],
         )
-        trainer.train(args.freeze_except_langvec)
+        trainer.train(args.freeze_except_langvec, args.projection_method)
 
     else:
         trainer = Trainer(

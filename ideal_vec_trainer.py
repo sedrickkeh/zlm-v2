@@ -19,11 +19,11 @@ class IdealVecTrainer(Trainer):
                 tokenizer, model_init, compute_metrics, callbacks, optimizers, preprocess_logits_for_metrics)
 
 
-    def create_optimizer_and_scheduler(self, num_training_steps: int, freeze_except_langvec: bool):
-        self.create_optimizer(freeze_except_langvec=freeze_except_langvec)
+    def create_optimizer_and_scheduler(self, num_training_steps: int, freeze_except_langvec: bool, projection_method: bool):
+        self.create_optimizer(freeze_except_langvec=freeze_except_langvec, projection_method=projection_method)
         self.create_scheduler(num_training_steps=num_training_steps, optimizer=self.optimizer)
 
-    def create_optimizer(self, freeze_except_langvec: bool):
+    def create_optimizer(self, freeze_except_langvec: bool, projection_method: bool):
         """
         Setup the optimizer.
 
@@ -44,7 +44,10 @@ class IdealVecTrainer(Trainer):
                 },
             ]
             if freeze_except_langvec:
-                optimizer_grouped_parameters = [p for p in self.model.transformer.linear1.parameters()]
+                if projection_method:
+                    optimizer_grouped_parameters = [p for p in self.model.transformer.linear1.parameters()]
+                else:
+                    optimizer_grouped_parameters = [p for p in self.model.transformer.lang_embs.parameters()]
 
             optimizer_cls, optimizer_kwargs = Trainer.get_optimizer_cls_and_kwargs(self.args)
 
@@ -66,6 +69,7 @@ class IdealVecTrainer(Trainer):
     def train(
         self,
         freeze_except_langvec = None,
+        projection_method = None,
         resume_from_checkpoint: Optional[Union[str, bool]] = None,
         trial: Union["optuna.Trial", Dict[str, Any]] = None,
         ignore_keys_for_eval: Optional[List[str]] = None,
@@ -225,7 +229,7 @@ class IdealVecTrainer(Trainer):
             self.optimizer = optimizer
             self.lr_scheduler = lr_scheduler
         elif not delay_optimizer_creation:
-            self.create_optimizer_and_scheduler(num_training_steps=max_steps, freeze_except_langvec=freeze_except_langvec)
+            self.create_optimizer_and_scheduler(num_training_steps=max_steps, freeze_except_langvec=freeze_except_langvec, projection_method=projection_method)
 
         self.state = TrainerState()
         self.state.is_hyper_param_search = trial is not None
@@ -241,7 +245,7 @@ class IdealVecTrainer(Trainer):
             self.model_wrapped = model
 
         if delay_optimizer_creation:
-            self.create_optimizer_and_scheduler(num_training_steps=max_steps, freeze_except_langvec=freeze_except_langvec)
+            self.create_optimizer_and_scheduler(num_training_steps=max_steps, freeze_except_langvec=freeze_except_langvec, projection_method=projection_method)
 
         # Check if saved optimizer or scheduler states exist
         self._load_optimizer_and_scheduler(resume_from_checkpoint)
