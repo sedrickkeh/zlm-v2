@@ -118,8 +118,13 @@ if __name__=="__main__":
     parser.add_argument("--langvec_dim", type=int, default=30)
     parser.add_argument("--projection_method", action='store_true',
                         help="If true, learns a projection. If false, learns embedding directly.")
+    parser.add_argument("--random_langvecs", action='store_true')
 
     args = parser.parse_args()
+
+    # Need exactly 1 way to specify langvec initialization
+    if args.use_langvecs:
+        assert((args.projection_method is not False) + (args.random_langvecs is not False) <= 1)
 
     # Need exactly 1 way to specify val language
     assert((args.test_split is not None) + (args.test_language is not None) + (args.test_file is not None) == 1)

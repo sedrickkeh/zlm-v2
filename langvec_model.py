@@ -33,6 +33,12 @@ class MyGPT2Model(GPT2Model):
         self.linear2 = nn.Linear(768+args.langvec_dim, 768)
         self.projection_method = args.projection_method
         self.lang_embs = nn.Embedding(77, args.langvec_dim)
+        if "random_langvecs" in args:
+            self.random_langvecs = args.random_langvecs
+            if self.random_langvecs:
+                self.rand_dict = {}
+                for i in range(78):
+                    self.rand_dict[i] = torch.rand(args.langvec_dim)
 
 
     def forward(
@@ -132,6 +138,8 @@ class MyGPT2Model(GPT2Model):
             input_hiddens = self.wte(input_ids)
             if self.projection_method:
                 langs = self.linear1(langs.float())
+            elif self.random_langvecs:
+                langs = torch.stack([self.rand_dict[i.item()] for i in lang_ids]).to(device)
             else:
                 langs = self.lang_embs(lang_ids)
             langs = langs.unsqueeze(1).expand(langs.shape[0], input_hiddens.shape[1], langs.shape[1])
