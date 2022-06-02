@@ -28,6 +28,7 @@ class MyGPT2Model(GPT2Model):
         # Initialize weights and apply final processing
         self.post_init()
 
+        self.args = args
         self.max_len = args.max_len
         self.linear1 = nn.Linear(args.langvec_initial_dim, args.langvec_dim)
         self.linear2 = nn.Linear(768+args.langvec_dim, 768)
@@ -40,17 +41,17 @@ class MyGPT2Model(GPT2Model):
                 self.rand_dict = {}
                 for i in range(78):
                     self.rand_dict[i] = torch.rand(args.langvec_dim)
-        if "average_langvecs" in args:
-            self.average_langvecs = args.average_langvecs
-            from lang_distances import NN_Extractor
-            langvec_extractor = NN_Extractor()
-            knn_languages = langvec_extractor.by_geography(args.test_language, k=args.average_knn)
-            from utils import load_lang_ids
-            lang_ids = load_lang_ids(args.lang2vec_dir)
-            lang_ids_vec = torch.tensor([lang_ids[i] for i in knn_languages])
-            lang_ids_vec = self.lang_embs(lang_ids_vec)
-            self.knn_vec = torch.mean(lang_ids_vec, dim=0)
 
+    def set_knn_vec(self):
+        self.average_langvecs = self.args.average_langvecs
+        from lang_distances import NN_Extractor
+        langvec_extractor = NN_Extractor()
+        knn_languages = langvec_extractor.by_geography(self.args.test_language, k=self.args.average_knn)
+        from utils import load_lang_ids
+        lang_ids = load_lang_ids(self.args.lang2vec_dir)
+        lang_ids_vec = torch.tensor([lang_ids[i] for i in knn_languages])
+        lang_ids_vec = self.lang_embs(lang_ids_vec)
+        self.knn_vec = torch.mean(lang_ids_vec, dim=0)
 
     def forward(
         self,

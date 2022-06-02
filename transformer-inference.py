@@ -52,6 +52,7 @@ def main(args):
 
     if args.use_langvecs:
         model = MyGPT2LMHeadModel.from_pretrained(args.model_path, args)
+        model.transformer.set_knn_vec()
     else:
         model = GPT2LMHeadModel.from_pretrained(args.model_path)
 
