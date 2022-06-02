@@ -50,19 +50,10 @@ def main(args):
         tokenize, batched=True, remove_columns=raw_datasets["valid"].column_names
     )
 
-    config = AutoConfig.from_pretrained(
-            "gpt2",
-            vocab_size=len(tokenizer),
-            n_ctx=64,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
     if args.use_langvecs:
-        model = MyGPT2LMHeadModel(config, args)
-        model = model.from_pretrained(args.model_path, args)
+        model = MyGPT2LMHeadModel.from_pretrained(args.model_path, args)
     else:
-        model = GPT2LMHeadModel(config)
-        model = model.from_pretrained(args.model_path)
+        model = GPT2LMHeadModel.from_pretrained(args.model_path)
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
     training_args = TrainingArguments(
