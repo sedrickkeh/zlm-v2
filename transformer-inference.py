@@ -118,7 +118,9 @@ if __name__=="__main__":
 
     # Need exactly 1 way to specify langvec initialization
     if args.use_langvecs:
-        assert((args.projection_method is not False) + (args.random_langvecs is not False) + (args.average_langvecs is not False) <= 1)
+        assert((args.projection_method is not False) + (args.random_langvecs is not False) + (args.average_langvecs is not False) >= 1)
+        if args.random_langvecs:
+            assert((args.projection_method is not False) + (args.average_langvecs is not False) == 0)
 
     # Need exactly 1 way to specify val language
     assert((args.test_split is not None) + (args.test_language is not None) + (args.test_file is not None) == 1)

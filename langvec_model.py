@@ -47,11 +47,18 @@ class MyGPT2Model(GPT2Model):
         from lang_distances import NN_Extractor
         langvec_extractor = NN_Extractor()
         knn_languages = langvec_extractor.by_geography(self.args.test_language, k=self.args.average_knn)
-        from utils import load_lang_ids
-        lang_ids = load_lang_ids(self.args.lang2vec_dir)
-        lang_ids_vec = torch.tensor([lang_ids[i] for i in knn_languages])
-        lang_ids_vec = self.lang_embs(lang_ids_vec)
-        self.knn_vec = torch.mean(lang_ids_vec, dim=0)
+        if self.projection_method:
+            from utils import load_lang2vec
+            lang2vec_dict = load_lang2vec(self.args.lang2vec_dir)
+            knn_languages.extend(self.args.test_languages)
+            lang_ids_vec = self.linear1(torch.tensor([lang2vec_dict[i] for i in knn_languages]).float())
+            self.knn_vec = torch.mean(lang_ids_vec, dim=0)
+        else:
+            from utils import load_lang_ids
+            lang_ids = load_lang_ids(self.args.lang2vec_dir)
+            lang_ids_vec = torch.tensor([lang_ids[i] for i in knn_languages])
+            lang_ids_vec = self.lang_embs(lang_ids_vec)
+            self.knn_vec = torch.mean(lang_ids_vec, dim=0)
 
     def forward(
         self,
@@ -149,7 +156,10 @@ class MyGPT2Model(GPT2Model):
             # inputs_embeds = self.wte(input_ids)
             input_hiddens = self.wte(input_ids)
             if self.projection_method:
-                langs = self.linear1(langs.float())
+                if self.average_langvecs:
+                    langs = torch.stack([self.knn_vec for _ in lang_ids]).to(device)
+                else:
+                    langs = self.linear1(langs.float())
             elif self.random_langvecs:
                 langs = torch.stack([self.rand_dict[i.item()] for i in lang_ids]).to(device)
             elif self.average_langvecs:
