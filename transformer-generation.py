@@ -2,6 +2,7 @@ import argparse
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from langvec_model import MyGPT2LMHeadModel
 import logging
+from tqdm.auto import tqdm
 logging.basicConfig(level=logging.INFO)
 
 class MyDecoder:
@@ -9,16 +10,21 @@ class MyDecoder:
         self.model = model
         self.tokenizer = tokenizer
     def do_decoding(self, args, c):
-        tokenized = self.tokenizer(c, max_length=args.max_len, return_tensors='pt')['input_ids']
+        tokenized = self.tokenizer(c, truncation=True, max_length=args.max_len, return_tensors='pt')['input_ids']
         if args.beam_search:
-            generated_outs = self.model.generate(tokenized, max_length=args.max_len, num_beams=args.num_beams)[0]
+            generated_outs = self.model.generate(tokenized, max_length=args.max_len, pad_token_id=self.tokenizer.eos_token_id, no_repeat_ngram_size=args.no_repeat_ngram_size, 
+                                num_beams=args.num_beams)[0]
         elif args.sampling_simple:
-            generated_outs = self.model.generate(tokenized, max_length=args.max_len, top_k=0, temperature=args.temperature)[0]
-        elif args.sampling_top_p:
-            generated_outs = self.model.generate(tokenized, max_length=args.max_len, top_k=args.k_val)[0]
+            generated_outs = self.model.generate(tokenized, max_length=args.max_len, pad_token_id=self.tokenizer.eos_token_id, no_repeat_ngram_size=args.no_repeat_ngram_size,
+                                temperature=args.temperature)[0]
         elif args.sampling_top_k:
-            generated_outs = self.model.generate(tokenized, max_length=args.max_len, top_p=args.p_val)[0]
-        out = self.tokenizer.decode(generated_outs, max_length=args.max_len)
+            generated_outs = self.model.generate(tokenized, max_length=args.max_len, pad_token_id=self.tokenizer.eos_token_id, no_repeat_ngram_size=args.no_repeat_ngram_size,
+                                top_k=args.k_val)[0]
+        elif args.sampling_top_p:
+            generated_outs = self.model.generate(tokenized, max_length=args.max_len, pad_token_id=self.tokenizer.eos_token_id, no_repeat_ngram_size=args.no_repeat_ngram_size,
+                                top_p=args.p_val)[0]
+        out = self.tokenizer.decode(generated_outs, truncation=True, max_length=args.max_len)
+        print(out)
         return out    
 
 def main(args):
@@ -62,7 +68,7 @@ def main(args):
     start_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     d = MyDecoder(model, tokenizer)
     outputs = []
-    for c in start_chars:
+    for c in tqdm(start_chars):
         curr_output = d.do_decoding(args, c)
         outputs.append(curr_output)
     with open(args.output_path, 'w') as f:
@@ -98,6 +104,7 @@ if __name__=="__main__":
     parser.add_argument("--p_val", type=float, default=0.9)
     parser.add_argument("--k_val", type=int, default=50)
     parser.add_argument("--temperature", type=float, default=0.7)
+    parser.add_argument("--no_repeat_ngram_size", type=int, default=0)
 
     args = parser.parse_args()
 
