@@ -67,7 +67,7 @@ def main(args):
 
     if args.start_chars=="alphabet":
         start_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-    elif args.start_chars=="wordlist"
+    elif args.start_chars=="wordlist":
         import pandas as pd
         filename = f"{args.wordlist_path}/{args.lang}.csv"
         texts = pd.read_csv(filename).text.tolist()
