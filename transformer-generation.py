@@ -65,7 +65,18 @@ def main(args):
     else:
         model = GPT2LMHeadModel.from_pretrained(args.model_path)
 
-    start_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    if args.start_chars=="alphabet":
+        start_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    elif args.start_chars=="wordlist"
+        import pandas as pd
+        filename = f"{args.wordlist_path}/{args.lang}.csv"
+        texts = pd.read_csv(filename).text.tolist()
+        start_chars = []
+        for t in texts:
+            start_chars.extend(t.split('_'))
+    else:
+        assert(args.start_chars in ["alphabet", "wordlist"])
+
     d = MyDecoder(model, tokenizer)
     outputs = []
     for c in tqdm(start_chars):
@@ -81,6 +92,11 @@ if __name__=="__main__":
     parser.add_argument("--lang2vec_dir", type=str, default="/content/drive/MyDrive/Colab Notebooks/zero-shot-lm/src_new/uriel_embeddings_new.txt")
     parser.add_argument("--model_path", type=str, required=True)
     parser.add_argument("--output_path", type=str, required=True)
+    parser.add_argument("--lang", type=str, required=True)
+    parser.add_argument("--wordlist_path", type=str, default="/content/drive/MyDrive/Colab Notebooks/zero-shot-lm/lexicons/csv_random/")
+
+    # Generation starting characters
+    parser.add_argument("--start_chars", type=str, default="alphabet", choices=["alphabet", "wordlist"])
 
     # Wordlists
     parser.add_argument("--use_wordlists", action="store_true")
