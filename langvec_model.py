@@ -45,7 +45,7 @@ class MyGPT2Model(GPT2Model):
     def set_knn_vec(self):
         self.average_langvecs = self.args.average_langvecs
         from lang_distances import NN_Extractor
-        langvec_extractor = NN_Extractor()
+        langvec_extractor = NN_Extractor(self.args.test_language)
         knn_languages = langvec_extractor.by_geography(self.args.test_language, k=self.args.average_knn)
         if self.projection_method:
             from utils import load_lang2vec

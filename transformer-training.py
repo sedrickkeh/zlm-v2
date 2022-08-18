@@ -148,6 +148,7 @@ if __name__=="__main__":
     parser.add_argument("--projection_method", action='store_true',
                         help="If true, learns a projection. If false, learns embedding directly.")
     parser.add_argument("--freeze_except_langvec", action='store_true')
+    parser.add_argument("--unknown_lang", action='store_true')
 
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--epochs", type=int, default=5)
@@ -189,7 +190,7 @@ if __name__=="__main__":
                 train_languages.append(line.strip())
     elif args.train_by_langvec is not None:
         assert(args.val_language is not None)
-        langvec_extractor = NN_Extractor()
+        langvec_extractor = NN_Extractor(args.val_languages)
         if args.train_by_langvec=="geo":
             train_languages = langvec_extractor.by_geography(args.val_language, k=args.train_knn)
         elif args.train_by_langvec=="fam":
@@ -208,6 +209,8 @@ if __name__=="__main__":
     if args.include_val_in_train:
         train_languages.extend(val_languages)
     args.train_languages = train_languages
+    if args.unknown_lang:
+        args.val_languages=['eng']
 
     ds = DataStatistics(args.data_dir)
     print("Train languages: ", ds.get_counts(args.train_languages), args.train_languages)

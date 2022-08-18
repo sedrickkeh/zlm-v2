@@ -21,7 +21,8 @@ class DataStatistics:
         cnt = 0
         arr = list(arr)
         for lang in arr:
-            cnt += self.counts[lang]
+            if lang in self.counts:
+                cnt += self.counts[lang]
         return cnt
 
     def init_dict(self):
